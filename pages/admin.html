@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>个人管理页</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js" ></script>
+</head>
+<body>
+  <div id="content">
+    <div class="title">个人管理 <button style="margin-left: 50px" @click='loginOut'>退出登陆</button></div>
+    <div class="list-wrapper">
+      <input type="text" placeholder="请输入关键字" v-model="queryContent">
+      <button @click='getList'>搜索</button>
+      <button v-if="blogs.length" @click='addNew'>新增</button>
+      <div class="list-item" v-for="(item, index) in blogs" :key="index">
+        <b class="title" v-text="item.title" @click='getDetail(item.id)'></b>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="#" class="update" @click='update(item.id)'>更新</a>
+        <span class="delete" @click='deleteBlog(item.id)'>删除</span>
+      </div>
+      <div class="no-data" v-if="!blogs.length" @click='addNew'>立即新增</div>
+    </div>
+  </div>
+
+  <script>
+    const app = new Vue({
+      el: '#content',
+      data: {
+        url: '/api/blog/list?isadmin=1',
+        blogs: [],
+        queryContent: ''
+      },
+      methods: {
+        getList() {
+          const url = this.url + `&keyword=${this.queryContent}`
+          $.get(url, (data) => {
+            if (data.code === 0) {
+              this.blogs = data.data
+            } else {
+              alert('查询失败')
+            }
+          })
+        },
+        deleteBlog(id) {
+          const choice = confirm('确认要删除这个吗')
+          if (choice) {
+            $.ajax({
+              type: 'POST',
+              url: '/api/blog/delete',
+              contentType: 'application/json',
+              data: JSON.stringify({
+                id
+              }),
+              success: data => {
+                if (data.code === 0) {
+                  alert('删除成功！')
+                  $.get(this.url, (data) => {
+                    if (data.code === 0) {
+                      this.blogs = data.data
+                    } else {
+                      window.location = 'login.html'
+                    }
+                  })
+                } else {
+                  alert('删除失败！')
+                }
+              }
+            })
+          }
+        },
+        addNew() {
+          window.location = 'update.html'
+        },
+        update(id) {
+          window.location = `update.html?id=${id}`
+        },
+        getDetail(id) {
+          window.location = `detail.html?id=${id}`
+        },
+        loginOut() {
+          console.log('222')
+          $.get('/api/user/loginOut', data => {
+            if (data.code === 0) {
+              alert('退出成功')
+              window.location = 'login.html'
+            }
+          })
+        }
+      },
+      mounted() {
+        $.get(this.url, (data) => {
+          if (data.code === 0) {
+            this.blogs = data.data
+          } else {
+            window.location = 'login.html'
+          }
+        })
+      },
+    })
+  </script>
+</body>
+</html>

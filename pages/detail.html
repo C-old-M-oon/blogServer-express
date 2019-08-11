@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>详情</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js" ></script>
+</head>
+<body>
+  <div id="content">
+    <button @click='goToIndex'>去大厅</button>
+    </br>
+    <b class="title" v-text="blog.title"></b>
+    <p class="author">作者：<span v-text="blog.author"></span></p>
+    <p class="cteateTime">创建时间：<span v-text="blog.createtime"></span></p>
+    <div class="content" v-text="blog.content"></div>
+  </div>
+
+  <script>
+    const app = new Vue({
+      el: '#content',
+      data: {
+        blog: {}
+      },
+      methods: {
+        goToIndex() {
+          window.location = 'index.html'
+        }
+      },
+      mounted() {
+        const query = window.location.href.split('?')[1]
+        let id = ''
+        if (query) {
+          id = query.split('=')[1]
+        }
+        if (id) {
+          $.get(`/api/blog/detail?id=${id}`, data => {
+            if (data.code === 0) {
+              const blog = data.data[0]
+              this.blog = blog
+            }
+          })
+        }
+      },
+    })
+  </script>
+</body>
+</html>
